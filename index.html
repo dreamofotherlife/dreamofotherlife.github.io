@@ -171,6 +171,156 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2022/07/11/RestHighLevelClient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zhida">
+      <meta itemprop="description" content="不要相信运气，实力才是硬道理">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="玄弗改非-氪不转运">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/11/RestHighLevelClient/" class="post-title-link" itemprop="url">RestHighLevelClient</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-11 16:05:24 / 修改时间：16:13:44" itemprop="dateCreated datePublished" datetime="2022-07-11T16:05:24+08:00">2022-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/elasticsearch/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>一、创建连接<br>  !ps:RestHighLevelClient是官方指定的连接API。另外一个是TransportClient，但是TransportClient这个是已经废弃不用的，所以会在ES8.0之后完全移除，也就是说8.0之后就无法使用了<br>RestHighLevelClient的maven依赖为（使用前必须添加相应依赖）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.elasticsearch.client&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;elasticsearch-rest-high-level-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">    &lt;version&gt;7.9.2&lt;&#x2F;version&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.elasticsearch&lt;&#x2F;groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;elasticsearch&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;version&gt;7.9.2&lt;&#x2F;version&gt;</span><br><span class="line"> &lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>注意：以上的依赖版本可以根据你使用的ES的版本来定，向下兼容，但是无法向上兼容</p>
+<p>创建连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static String ip &#x3D; &quot;localhost&quot;;</span><br><span class="line">static int port &#x3D; 9200;</span><br><span class="line">static RestHighLevelClient restHighLevelClient &#x3D; null;</span><br><span class="line">static TransportClient client &#x3D; null;</span><br><span class="line"></span><br><span class="line">static  RestHighLevelClient initClient()&#123;</span><br><span class="line">    &#x2F;&#x2F;这里的RestClient.builder(new HttpHost(ip,port),.........)支持多个httphost连接，也就是支持连接多个elasticsearch</span><br><span class="line">    restHighLevelClient &#x3D; new RestHighLevelClient(RestClient.builder(new HttpHost(ip,port)));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static Connection getInstance()&#123;</span><br><span class="line">    synchronized (ElasticSearchFactory.class)&#123;</span><br><span class="line">        if (restHighLevelClient &#x3D;&#x3D; null)&#123;</span><br><span class="line">         restHighLevelClient  &#x3D;   initClient();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return connection;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RestHighLevelClient 支持对ES的增删改查、批量操作<br>新增：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public static  void creatIndex(String json)&#123;</span><br><span class="line">       IndexRequest indexRequest &#x3D; new IndexRequest(&quot;test_index&quot;,&quot;String&quot;);</span><br><span class="line">       indexRequest.source(json, XContentType.JSON);&#x2F;&#x2F;这里的json为存入ES的文档内容</span><br><span class="line">       try &#123;</span><br><span class="line">           restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);&#x2F;&#x2F;RequestOptions在新方法中必须选择</span><br><span class="line">       &#125; catch (IOException e) &#123;</span><br><span class="line">           e.printStackTrace();</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询：<br>查询支持直接查询和条件查询，由于ES是根据索引、文档类型和文档ID确定一个唯一的文档的，所以直接查询必须要有索引和类型还有ID</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">    public static Map&lt;String, Object&gt; getIndex(String indexName,String type,String id)&#123;</span><br><span class="line">        GetRequest request &#x3D; new GetRequest(indexName);</span><br><span class="line">        &#x2F;&#x2F;SearchRequest searchRequest &#x3D; new SearchRequest(indexName);</span><br><span class="line">        try &#123;</span><br><span class="line">            GetResponse search &#x3D; restHighLevelClient.get(request, RequestOptions.DEFAULT);</span><br><span class="line">            Map&lt;String, Object&gt; source &#x3D; search.getSource();</span><br><span class="line">            return source;</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return new HashMap&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#96;&#96;</span><br><span class="line"></span><br><span class="line">条件查询：</span><br><span class="line">条件查询支持所有的ES的查询规则：![使用ES查询语句须知]&#123;https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;cfbac15e0b7a&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>public static Map&lt;String, Object&gt; searchIndex(String indexName){
+    //GetRequest request = new GetRequest(indexName);
+    //SearchRequest searchRequest = new SearchRequest(indexName);
+    QueryBuilder queryBuilders = QueryBuilders.boolQuery().filter(
+            QueryBuilders.termQuery(&quot;queryKey&quot;,&quot;吱吱吱ZZZ&quot;)
+    );
+    SearchRequest searchRequest = new SearchRequest();
+    //searchRequest.indices(&quot;posts&quot;);这里可以设计GEET或者POST
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    // searchSourceBuilder.sort(new ScoreSortBuilder().order(SortOrder.DESC));支持按评分排序，评分是指分词之后取得的文档相似度评分
+    searchSourceBuilder.query(QueryBuilders.boolQuery().filter(QueryBuilders.termQuery(&quot;queryKey.keyword&quot;,&quot;吱吱吱ZZZ&quot;)));
+    searchRequest.source(searchSourceBuilder);
+    try {
+        SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        SearchHit[] hits = search.getHits().getHits();
+        for (SearchHit searchHit : hits){
+            Map&lt;String, Object&gt; sourceAsMap = searchHit.getSourceAsMap();
+            System.out.println(&quot;source : {}&quot; + sourceAsMap.toString());
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return new HashMap&lt;&gt;();
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">修改：</span><br><span class="line">ps:ES中其实并不存在真正意义上的修改，其实是进行的文档覆盖，先将原文档查出来标记删除，然后在原文档的基础上添加上修改形成一份新文档，存入ES中，之后再将打上删除标记的文档删除。</span><br></pre></td></tr></table></figure>
+<pre><code>public static void updateIndex(String indexName, String type, String id, String json){
+    UpdateRequest request = new UpdateRequest(indexName, type, id);
+
+    request.doc(json, XContentType.JSON);
+    try {
+        UpdateResponse updateResponse = restHighLevelClient.update(request,RequestOptions.DEFAULT);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">删除:</span><br></pre></td></tr></table></figure>
+
+<pre><code>public static void deleteIndex(String indexName, String type, String id){
+    DeleteRequest request = new DeleteRequest(indexName,type,id);
+    try {
+        restHighLevelClient.delete(request,RequestOptions.DEFAULT);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bulk操作，bulk操作相当于批处理，能够在一次操作中处理一批数据，同时能够同时处理，增删改操作</span><br></pre></td></tr></table></figure>
+<pre><code>public static void bulkIndex(){
+        BulkRequest request = new BulkRequest();
+        String jsonString=&quot;{\n&quot; +
+                &quot;\t\&quot;databaseId\&quot;: \&quot;謝謝謝謝謝謝\&quot;,\n&quot; +
+                &quot;\t\&quot;databaseType\&quot;: \&quot;嘻嘻嘻\&quot;,\n&quot; +
+                &quot;\t\&quot;queryKey\&quot;:\&quot;吱吱吱ZZZ\&quot;\n&quot; +
+                &quot;}\n&quot;;
+    UUID uuid = UUID.randomUUID();
+    request.add(new IndexRequest(&quot;test_index&quot;, &quot;String&quot;, uuid.toString())
+                .source(jsonString,XContentType.JSON));
+        String updateJson=&quot;{\n&quot; +
+                &quot;  \&quot;queryKey\&quot;:\&quot;吱吱吱ZZZ\&quot;\n&quot; +
+                &quot;}&quot;;
+        request.add(new UpdateRequest(&quot;test_index&quot;, &quot;String&quot;, uuid.toString())
+                .doc(updateJson,XContentType.JSON));
+        request.add(new DeleteRequest(&quot;test_index&quot;, &quot;String&quot;, uuid.toString()));
+
+    try {
+        restHighLevelClient.bulk(request, RequestOptions.DEFAULT);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">执行ES-DSL</span><br></pre></td></tr></table></figure>
+
+<p>String json = “{&quot;bool&quot;:{&quot;filter&quot;:[{&quot;term&quot;:{&quot;queryKey.keyword&quot;:&quot;吱吱吱ZZZ&quot;}}]}}”;<br>String index= “test_index”;<br>    public static void wapQuerty(String json,String index){<br>        WrapperQueryBuilder queryBuilder = new WrapperQueryBuilder(json);<br>        SearchRequest searchRequest = new SearchRequest();<br>        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();<br>        searchSourceBuilder.query(queryBuilder);<br>        searchRequest.source(searchSourceBuilder).indices(index);<br>        try {<br>            SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);<br>            SearchHit[] hits = search.getHits().getHits();<br>            for (SearchHit searchHit : hits){<br>                Map&lt;String, Object&gt; sourceAsMap = searchHit.getSourceAsMap();<br>                String id = searchHit.getId();<br>                System.out.println(“id:”+id);<br>            }<br>        } catch (IOException e) {<br>            e.printStackTrace();<br>        }<br>    }</p>
+<pre><code></code></pre>
+      
+    </div>
+    <div>
+
+</div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/19/ES-%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -522,7 +672,7 @@ git clone https://github.com/litten/hexo-theme-yilia.git themes/yilia</code></pr
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

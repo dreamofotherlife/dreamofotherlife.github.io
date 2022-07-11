@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script src="/live2d-weidget/autoload.js"></script>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Mist',
+    version: '7.7.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="一、创建连接  !ps:RestHighLevelClient是官方指定的连接API。另外一个是TransportClient，但是TransportClient这个是已经废弃不用的，所以会在ES8.0之后完全移除，也就是说8.0之后就无法使用了RestHighLevelClient的maven依赖为（使用前必须添加相应依赖） 12345678910&lt;dependency&gt;    &amp;l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RestHighLevelClient">
+<meta property="og:url" content="http://yoursite.com/2022/07/11/RestHighLevelClient/index.html">
+<meta property="og:site_name" content="玄弗改非-氪不转运">
+<meta property="og:description" content="一、创建连接  !ps:RestHighLevelClient是官方指定的连接API。另外一个是TransportClient，但是TransportClient这个是已经废弃不用的，所以会在ES8.0之后完全移除，也就是说8.0之后就无法使用了RestHighLevelClient的maven依赖为（使用前必须添加相应依赖） 12345678910&lt;dependency&gt;    &amp;l">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-11T08:05:24.000Z">
+<meta property="article:modified_time" content="2022-07-11T08:13:44.585Z">
+<meta property="article:author" content="zhida">
+<meta property="article:tag" content="elasticsearch">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2022/07/11/RestHighLevelClient/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>RestHighLevelClient | 玄弗改非-氪不转运</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">玄弗改非-氪不转运</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">随缘杂论</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2022/07/11/RestHighLevelClient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zhida">
+      <meta itemprop="description" content="不要相信运气，实力才是硬道理">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="玄弗改非-氪不转运">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RestHighLevelClient
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-11 16:05:24 / 修改时间：16:13:44" itemprop="dateCreated datePublished" datetime="2022-07-11T16:05:24+08:00">2022-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/elasticsearch/" itemprop="url" rel="index">
+                    <span itemprop="name">elasticsearch</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>一、创建连接<br>  !ps:RestHighLevelClient是官方指定的连接API。另外一个是TransportClient，但是TransportClient这个是已经废弃不用的，所以会在ES8.0之后完全移除，也就是说8.0之后就无法使用了<br>RestHighLevelClient的maven依赖为（使用前必须添加相应依赖）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.elasticsearch.client&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;elasticsearch-rest-high-level-client&lt;&#x2F;artifactId&gt;</span><br><span class="line">    &lt;version&gt;7.9.2&lt;&#x2F;version&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.elasticsearch&lt;&#x2F;groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;elasticsearch&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;version&gt;7.9.2&lt;&#x2F;version&gt;</span><br><span class="line"> &lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>注意：以上的依赖版本可以根据你使用的ES的版本来定，向下兼容，但是无法向上兼容</p>
+<p>创建连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">static String ip &#x3D; &quot;localhost&quot;;</span><br><span class="line">static int port &#x3D; 9200;</span><br><span class="line">static RestHighLevelClient restHighLevelClient &#x3D; null;</span><br><span class="line">static TransportClient client &#x3D; null;</span><br><span class="line"></span><br><span class="line">static  RestHighLevelClient initClient()&#123;</span><br><span class="line">    &#x2F;&#x2F;这里的RestClient.builder(new HttpHost(ip,port),.........)支持多个httphost连接，也就是支持连接多个elasticsearch</span><br><span class="line">    restHighLevelClient &#x3D; new RestHighLevelClient(RestClient.builder(new HttpHost(ip,port)));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static Connection getInstance()&#123;</span><br><span class="line">    synchronized (ElasticSearchFactory.class)&#123;</span><br><span class="line">        if (restHighLevelClient &#x3D;&#x3D; null)&#123;</span><br><span class="line">         restHighLevelClient  &#x3D;   initClient();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return connection;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RestHighLevelClient 支持对ES的增删改查、批量操作<br>新增：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public static  void creatIndex(String json)&#123;</span><br><span class="line">       IndexRequest indexRequest &#x3D; new IndexRequest(&quot;test_index&quot;,&quot;String&quot;);</span><br><span class="line">       indexRequest.source(json, XContentType.JSON);&#x2F;&#x2F;这里的json为存入ES的文档内容</span><br><span class="line">       try &#123;</span><br><span class="line">           restHighLevelClient.index(indexRequest, RequestOptions.DEFAULT);&#x2F;&#x2F;RequestOptions在新方法中必须选择</span><br><span class="line">       &#125; catch (IOException e) &#123;</span><br><span class="line">           e.printStackTrace();</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询：<br>查询支持直接查询和条件查询，由于ES是根据索引、文档类型和文档ID确定一个唯一的文档的，所以直接查询必须要有索引和类型还有ID</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">    public static Map&lt;String, Object&gt; getIndex(String indexName,String type,String id)&#123;</span><br><span class="line">        GetRequest request &#x3D; new GetRequest(indexName);</span><br><span class="line">        &#x2F;&#x2F;SearchRequest searchRequest &#x3D; new SearchRequest(indexName);</span><br><span class="line">        try &#123;</span><br><span class="line">            GetResponse search &#x3D; restHighLevelClient.get(request, RequestOptions.DEFAULT);</span><br><span class="line">            Map&lt;String, Object&gt; source &#x3D; search.getSource();</span><br><span class="line">            return source;</span><br><span class="line">        &#125; catch (IOException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        return new HashMap&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line">&#96;&#96;</span><br><span class="line"></span><br><span class="line">条件查询：</span><br><span class="line">条件查询支持所有的ES的查询规则：![使用ES查询语句须知]&#123;https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;cfbac15e0b7a&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>public static Map&lt;String, Object&gt; searchIndex(String indexName){
+    //GetRequest request = new GetRequest(indexName);
+    //SearchRequest searchRequest = new SearchRequest(indexName);
+    QueryBuilder queryBuilders = QueryBuilders.boolQuery().filter(
+            QueryBuilders.termQuery(&quot;queryKey&quot;,&quot;吱吱吱ZZZ&quot;)
+    );
+    SearchRequest searchRequest = new SearchRequest();
+    //searchRequest.indices(&quot;posts&quot;);这里可以设计GEET或者POST
+    SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+    // searchSourceBuilder.sort(new ScoreSortBuilder().order(SortOrder.DESC));支持按评分排序，评分是指分词之后取得的文档相似度评分
+    searchSourceBuilder.query(QueryBuilders.boolQuery().filter(QueryBuilders.termQuery(&quot;queryKey.keyword&quot;,&quot;吱吱吱ZZZ&quot;)));
+    searchRequest.source(searchSourceBuilder);
+    try {
+        SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+        SearchHit[] hits = search.getHits().getHits();
+        for (SearchHit searchHit : hits){
+            Map&lt;String, Object&gt; sourceAsMap = searchHit.getSourceAsMap();
+            System.out.println(&quot;source : {}&quot; + sourceAsMap.toString());
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return new HashMap&lt;&gt;();
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">修改：</span><br><span class="line">ps:ES中其实并不存在真正意义上的修改，其实是进行的文档覆盖，先将原文档查出来标记删除，然后在原文档的基础上添加上修改形成一份新文档，存入ES中，之后再将打上删除标记的文档删除。</span><br></pre></td></tr></table></figure>
+<pre><code>public static void updateIndex(String indexName, String type, String id, String json){
+    UpdateRequest request = new UpdateRequest(indexName, type, id);
+
+    request.doc(json, XContentType.JSON);
+    try {
+        UpdateResponse updateResponse = restHighLevelClient.update(request,RequestOptions.DEFAULT);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">删除:</span><br></pre></td></tr></table></figure>
+
+<pre><code>public static void deleteIndex(String indexName, String type, String id){
+    DeleteRequest request = new DeleteRequest(indexName,type,id);
+    try {
+        restHighLevelClient.delete(request,RequestOptions.DEFAULT);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bulk操作，bulk操作相当于批处理，能够在一次操作中处理一批数据，同时能够同时处理，增删改操作</span><br></pre></td></tr></table></figure>
+<pre><code>public static void bulkIndex(){
+        BulkRequest request = new BulkRequest();
+        String jsonString=&quot;{\n&quot; +
+                &quot;\t\&quot;databaseId\&quot;: \&quot;謝謝謝謝謝謝\&quot;,\n&quot; +
+                &quot;\t\&quot;databaseType\&quot;: \&quot;嘻嘻嘻\&quot;,\n&quot; +
+                &quot;\t\&quot;queryKey\&quot;:\&quot;吱吱吱ZZZ\&quot;\n&quot; +
+                &quot;}\n&quot;;
+    UUID uuid = UUID.randomUUID();
+    request.add(new IndexRequest(&quot;test_index&quot;, &quot;String&quot;, uuid.toString())
+                .source(jsonString,XContentType.JSON));
+        String updateJson=&quot;{\n&quot; +
+                &quot;  \&quot;queryKey\&quot;:\&quot;吱吱吱ZZZ\&quot;\n&quot; +
+                &quot;}&quot;;
+        request.add(new UpdateRequest(&quot;test_index&quot;, &quot;String&quot;, uuid.toString())
+                .doc(updateJson,XContentType.JSON));
+        request.add(new DeleteRequest(&quot;test_index&quot;, &quot;String&quot;, uuid.toString()));
+
+    try {
+        restHighLevelClient.bulk(request, RequestOptions.DEFAULT);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">执行ES-DSL</span><br></pre></td></tr></table></figure>
+
+<p>String json = “{&quot;bool&quot;:{&quot;filter&quot;:[{&quot;term&quot;:{&quot;queryKey.keyword&quot;:&quot;吱吱吱ZZZ&quot;}}]}}”;<br>String index= “test_index”;<br>    public static void wapQuerty(String json,String index){<br>        WrapperQueryBuilder queryBuilder = new WrapperQueryBuilder(json);<br>        SearchRequest searchRequest = new SearchRequest();<br>        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();<br>        searchSourceBuilder.query(queryBuilder);<br>        searchRequest.source(searchSourceBuilder).indices(index);<br>        try {<br>            SearchResponse search = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);<br>            SearchHit[] hits = search.getHits().getHits();<br>            for (SearchHit searchHit : hits){<br>                Map&lt;String, Object&gt; sourceAsMap = searchHit.getSourceAsMap();<br>                String id = searchHit.getId();<br>                System.out.println(“id:”+id);<br>            }<br>        } catch (IOException e) {<br>            e.printStackTrace();<br>        }<br>    }</p>
+<pre><code></code></pre>
+    </div>
+    <div>
+
+    <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+
+</div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/elasticsearch/" rel="tag"># elasticsearch</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/07/19/ES-%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/" rel="prev" title="ES 数据迁移">
+      <i class="fa fa-chevron-left"></i> ES 数据迁移
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zhida</p>
+  <div class="site-description" itemprop="description">不要相信运气，实力才是硬道理</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+      
+           <div>
+              <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" auto=1 width="210" height="110" src="//music.163.com/outchain/player?type=2&id=28188425&auto=1&height=66"></iframe>
+           </div>
+      
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhida</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.2.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> v7.7.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"scale":1,"hHeadPos":0.5,"vHeadPos":0.618,"jsonPath":"/live2dw/assets/shizuku.model.json"},"display":{"superSample":2,"width":150,"height":300,"position":"right","hOffset":0,"vOffset":-20},"mobile":{"show":true,"scale":0.5},"log":false});</script></body>
+</html>
